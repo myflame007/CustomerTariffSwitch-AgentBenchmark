@@ -1,0 +1,8 @@
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.swp
+decisions.json
+decisions.json.tmp

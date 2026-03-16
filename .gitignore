@@ -1,0 +1,16 @@
+# Build outputs
+bin/
+obj/
+
+# IDE
+.vs/
+*.user
+*.suo
+
+# Runtime output
+Output/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store

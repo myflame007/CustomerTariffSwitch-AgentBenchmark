@@ -1,0 +1,19 @@
+# Build outputs
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Rider
+.idea/
+
+# Application output
+decisions.json
+output-report.txt
+
+# OS files
+Thumbs.db
+.DS_Store

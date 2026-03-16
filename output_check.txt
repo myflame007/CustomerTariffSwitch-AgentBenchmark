@@ -1,0 +1,4 @@
+CustomerTariffSwitch : decisions.json
+CustomerTariffSwitch-Claude : decisions.json, report.csv
+CustomerTariffSwitch-Claude-Tests : NO OUTPUT DIR
+CustomerTariffSwitch-Claude-TestsAndAgent : NO OUTPUT DIR

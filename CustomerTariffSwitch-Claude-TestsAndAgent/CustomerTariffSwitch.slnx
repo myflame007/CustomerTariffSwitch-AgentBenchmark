@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="CustomerTariffSwitch.Test/CustomerTariffSwitch.Test.csproj" />
+  <Project Path="CustomerTariffSwitch/CustomerTariffSwitch.csproj" />
+</Solution>

@@ -1,0 +1,16 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+# Runtime output
+processing_results.json
+processing_results.csv
+
+# IDE / OS
+.idea/
+*.swp
+Thumbs.db
+Desktop.ini
+.DS_Store

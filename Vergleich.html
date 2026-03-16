@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vergleich — CustomerTariffSwitch Implementierungen</title>
+    <style>
+        :root {
+            --p1: #2563eb;
+            --p2: #7c3aed;
+            --p3: #059669;
+            --p4: #d97706;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface2: #334155;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: #475569;
+            --accent: #38bdf8;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .hero {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1a1a2e 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 3rem 2rem 2rem;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .hero .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        .meta-badges {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.2rem;
+            flex-wrap: wrap;
+        }
+        .badge {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.35rem 1rem;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+        /* Navigation */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.6rem 2rem;
+            display: flex;
+            gap: 1.5rem;
+            overflow-x: auto;
+        }
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            padding: 0.3rem 0;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        nav a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+        /* Sections */
+        section { margin-bottom: 3rem; }
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+            color: var(--accent);
+        }
+        h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 1.8rem 0 1rem;
+            color: var(--text);
+        }
+        /* Project Overview Cards */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .project-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 1.3rem;
+            border-left: 4px solid;
+            transition: transform 0.15s;
+        }
+        .project-card:hover { transform: translateY(-2px); }
+        .project-card.p1 { border-left-color: var(--p1); }
+        .project-card.p2 { border-left-color: var(--p2); }
+        .project-card.p3 { border-left-color: var(--p3); }
+        .project-card.p4 { border-left-color: var(--p4); }
+        .project-card .label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.3rem;
+        }
+        .project-card.p1 .label { color: var(--p1); }
+        .project-card.p2 .label { color: var(--p2); }
+        .project-card.p3 .label { color: var(--p3); }
+        .project-card.p4 .label { color: var(--p4); }
+        .project-card .name { font-weight: 600; font-size: 1rem; margin-bottom: 0.3rem; }
+        .project-card .desc { color: var(--text-muted); font-size: 0.85rem; }
+        .project-card .dotnet {
+            display: inline-block;
+            margin-top: 0.5rem;
+            background: var(--surface2);
+            border-radius: 4px;
+            padding: 0.15rem 0.5rem;
+            font-size: 0.75rem;
+            font-family: 'Cascadia Code', monospace;
+        }
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.88rem;
+        }
+        thead th {
+            background: var(--surface2);
+            padding: 0.7rem 0.8rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--text-muted);
+            border-bottom: 2px solid var(--border);
+        }
+        thead th:first-child { text-align: left; }
+        tbody td {
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+        tbody td:first-child {
+            text-align: left;
+            font-weight: 500;
+        }
+        tbody tr:hover { background: rgba(56, 189, 248, 0.04); }
+        /* Highlighting column headers with project colors */
+        .col-p1 { color: var(--p1) !important; }
+        .col-p2 { color: var(--p2) !important; }
+        .col-p3 { color: var(--p3) !important; }
+        .col-p4 { color: var(--p4) !important; }
+        /* Bar Charts */
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+            margin: 1rem 0;
+        }
+        .bar-row {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .bar-label {
+            width: 140px;
+            font-size: 0.85rem;
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .bar-track {
+            flex: 1;
+            background: var(--surface);
+            border-radius: 6px;
+            height: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            padding-left: 0.6rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #fff;
+            transition: width 0.8s ease-out;
+        }
+        .bar-fill.p1 { background: linear-gradient(90deg, var(--p1), #3b82f6); }
+        .bar-fill.p2 { background: linear-gradient(90deg, var(--p2), #8b5cf6); }
+        .bar-fill.p3 { background: linear-gradient(90deg, var(--p3), #10b981); }
+        .bar-fill.p4 { background: linear-gradient(90deg, var(--p4), #f59e0b); }
+        /* Star ratings */
+        .stars { letter-spacing: 1px; }
+        .star-3 { color: #fbbf24; }
+        .star-2 { color: #a3a3a3; }
+        .star-1 { color: #525252; }
+        /* Score cards */
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .score-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .score-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+        }
+        .score-card.p1::before { background: var(--p1); }
+        .score-card.p2::before { background: var(--p2); }
+        .score-card.p3::before { background: var(--p3); }
+        .score-card.p4::before { background: var(--p4); }
+        .score-number {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+        .score-card.p1 .score-number { color: var(--p1); }
+        .score-card.p2 .score-number { color: var(--p2); }
+        .score-card.p3 .score-number { color: var(--p3); }
+        .score-card.p4 .score-number { color: var(--p4); }
+        .score-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; }
+        .score-sub { font-size: 0.92rem; color: var(--text); font-weight: 500; margin-top: 0.2rem; }
+        /* Info box */
+        .info-box {
+            background: rgba(56, 189, 248, 0.08);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 8px 8px 0;
+            padding: 0.8rem 1.2rem;
+            margin: 1rem 0;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+        /* Strength/Weakness cards */
+        .sw-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        .sw-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 1.3rem;
+            border-top: 3px solid;
+        }
+        .sw-card.p1 { border-top-color: var(--p1); }
+        .sw-card.p2 { border-top-color: var(--p2); }
+        .sw-card.p3 { border-top-color: var(--p3); }
+        .sw-card.p4 { border-top-color: var(--p4); }
+        .sw-card h4 { font-size: 0.95rem; margin-bottom: 0.8rem; }
+        .sw-card.p1 h4 { color: var(--p1); }
+        .sw-card.p2 h4 { color: var(--p2); }
+        .sw-card.p3 h4 { color: var(--p3); }
+        .sw-card.p4 h4 { color: var(--p4); }
+        .sw-list { list-style: none; font-size: 0.85rem; }
+        .sw-list li { padding: 0.25rem 0; }
+        .sw-list .strength::before { content: '✅ '; }
+        .sw-list .weakness::before { content: '⚠️ '; }
+        /* Conclusion */
+        .conclusion {
+            background: linear-gradient(135deg, var(--surface), var(--surface2));
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+        }
+        .conclusion p { margin-bottom: 1rem; font-size: 0.95rem; line-height: 1.7; }
+        .conclusion strong { color: var(--accent); }
+        .highlight-box {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 10px;
+            padding: 1.2rem;
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        /* Review note */
+        .review-note {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-style: italic;
+            max-width: 700px;
+        }
+        /* Radar-like rating table */
+        .rating-table tbody td:not(:first-child) { font-size: 1rem; }
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 1.5rem; }
+            nav { padding: 0.5rem 1rem; gap: 1rem; }
+            .container { padding: 1.5rem 1rem; }
+            .bar-label { width: 100px; font-size: 0.78rem; }
+        }
+        code {
+            background: var(--surface2);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.83rem;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+        }
+    </style>
+</head>
+<body>
+
+<div class="hero">
+    <h1>CustomerTariffSwitch — Implementierungsvergleich</h1>
+    <p class="subtitle">Mensch vs. KI: 4 Implementierungen derselben Aufgabe im direkten Vergleich</p>
+    <div class="meta-badges">
+        <span class="badge">Analysiert: 16.03.2026</span>
+        <span class="badge">Methode: Automatisierte Metriken + Code Review</span>
+        <span class="badge">Input: 3 CSV-Dateien (gemeinsam)</span>
+    </div>
+</div>
+
+<nav>
+    <a href="#overview">Übersicht</a>
+    <a href="#structure">Struktur</a>
+    <a href="#loc">Lines of Code</a>
+    <a href="#tests">Tests</a>
+    <a href="#runtime">Laufzeit</a>
+    <a href="#review">Code Review</a>
+    <a href="#scoring">Scoring</a>
+    <a href="#conclusion">Fazit</a>
+</nav>
+
+<div class="container">
+
+    <!-- OVERVIEW -->
+    <section id="overview">
+        <h2>Übersicht der Projekte</h2>
+        <div class="project-grid">
+            <div class="project-card p1">
+                <div class="label">P1 — Mensch</div>
+                <div class="name">CustomerTariffSwitch</div>
+                <div class="desc">Manuelle Implementierung durch einen Entwickler</div>
+                <span class="dotnet">net10.0</span>
+            </div>
+            <div class="project-card p2">
+                <div class="label">P2 — Claude</div>
+                <div class="name">CustomerTariffSwitch-Claude</div>
+                <div class="desc">Claude, nur basierend auf Instructions.md</div>
+                <span class="dotnet">net10.0</span>
+            </div>
+            <div class="project-card p3">
+                <div class="label">P3 — Claude + Tests</div>
+                <div class="name">CustomerTariffSwitch-Claude-Tests</div>
+                <div class="desc">Claude, Instructions.md + Tests aus P1</div>
+                <span class="dotnet">net8.0</span>
+            </div>
+            <div class="project-card p4">
+                <div class="label">P4 — Claude + Agent</div>
+                <div class="name">CustomerTariffSwitch-Claude-TestsAndAgent</div>
+                <div class="desc">Claude, Instructions.md + Multi-Agent-Workflow</div>
+                <span class="dotnet">net8.0</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- STRUCTURE -->
+    <section id="structure">
+        <h2>1. Projektstruktur</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Metrik</th>
+                    <th class="col-p1">P1 (Mensch)</th>
+                    <th class="col-p2">P2 (Claude)</th>
+                    <th class="col-p3">P3 (Claude+Tests)</th>
+                    <th class="col-p4">P4 (Claude+Agent)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Assemblies / csproj</td><td><strong>4</strong></td><td>2</td><td>2</td><td>2</td></tr>
+                <tr><td>Source-Dateien</td><td>10</td><td>9</td><td>9</td><td><strong>11</strong></td></tr>
+                <tr><td>Test-Dateien</td><td>5</td><td>1</td><td><strong>6</strong></td><td><strong>6</strong></td></tr>
+                <tr><td>Solution-Typ</td><td>.sln</td><td>.slnx</td><td>.slnx</td><td>.slnx</td></tr>
+            </tbody>
+        </table>
+        <div class="info-box">
+            <strong>P1</strong> verwendet 4 separate Assemblies (Models, Data, Services, Test) — die modularste Architektur.<br>
+            <strong>P2–P4</strong> nutzen je 2 Assemblies (App + Test) mit Ordnern zur logischen Trennung.
+        </div>
+    </section>
+
+    <!-- LOC -->
+    <section id="loc">
+        <h2>2. Lines of Code</h2>
+
+        <h3>Source Code (ohne Tests)</h3>
+        <div class="bar-chart">
+            <div class="bar-row">
+                <span class="bar-label">P1 (Mensch)</span>
+                <div class="bar-track"><div class="bar-fill p1" style="width: 100%">433 LOC</div></div>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">P2 (Claude)</span>
+                <div class="bar-track"><div class="bar-fill p2" style="width: 90.8%">393 LOC</div></div>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">P3 (Claude+Tests)</span>
+                <div class="bar-track"><div class="bar-fill p3" style="width: 99.3%">430 LOC</div></div>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">P4 (Claude+Agent)</span>
+                <div class="bar-track"><div class="bar-fill p4" style="width: 94.5%">409 LOC</div></div>
+            </div>
+        </div>
+
+        <h3>Test Code</h3>
+        <div class="bar-chart">
+            <div class="bar-row">
+                <span class="bar-label">P1 (Mensch)</span>
+                <div class="bar-track"><div class="bar-fill p1" style="width: 99.8%">633 LOC</div></div>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">P2 (Claude)</span>
+                <div class="bar-track"><div class="bar-fill p2" style="width: 26%">165 LOC</div></div>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">P3 (Claude+Tests)</span>
+                <div class="bar-track"><div class="bar-fill p3" style="width: 100%">634 LOC</div></div>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">P4 (Claude+Agent)</span>
+                <div class="bar-track"><div class="bar-fill p4" style="width: 100%">634 LOC</div></div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Detail</th>
+                    <th class="col-p1">P1</th>
+                    <th class="col-p2">P2</th>
+                    <th class="col-p3">P3</th>
+                    <th class="col-p4">P4</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Source: Gesamtzeilen</td><td>586</td><td>485</td><td>528</td><td>515</td></tr>
+                <tr><td>Source: Code-Zeilen</td><td>433</td><td>393</td><td>430</td><td>409</td></tr>
+                <tr><td>Source: Kommentare</td><td><strong>39</strong></td><td>28</td><td>10</td><td>19</td></tr>
+                <tr><td>Source: Leerzeilen</td><td>114</td><td>64</td><td>88</td><td>87</td></tr>
+                <tr><td>Klassen</td><td>8</td><td>7</td><td>7</td><td>7</td></tr>
+                <tr><td>Enums</td><td>3</td><td>1</td><td>3</td><td>3</td></tr>
+                <tr><td>Records</td><td>0</td><td><strong>4</strong></td><td>0</td><td>0</td></tr>
+                <tr><td>Methoden</td><td>17</td><td>13</td><td>17</td><td>16</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- TESTS -->
+    <section id="tests">
+        <h2>3. Tests</h2>
+        <div class="bar-chart">
+            <div class="bar-row">
+                <span class="bar-label">P1 (Mensch)</span>
+                <div class="bar-track"><div class="bar-fill p1" style="width: 100%">43 Tests — 100% ✅</div></div>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">P2 (Claude)</span>
+                <div class="bar-track"><div class="bar-fill p2" style="width: 34.9%">15 Tests — 100% ✅</div></div>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">P3 (Claude+Tests)</span>
+                <div class="bar-track"><div class="bar-fill p3" style="width: 100%">43 Tests — 100% ✅</div></div>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">P4 (Claude+Agent)</span>
+                <div class="bar-track"><div class="bar-fill p4" style="width: 100%">43 Tests — 100% ✅</div></div>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Metrik</th>
+                    <th class="col-p1">P1</th>
+                    <th class="col-p2">P2</th>
+                    <th class="col-p3">P3</th>
+                    <th class="col-p4">P4</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Testanzahl</td><td><strong>43</strong></td><td>15</td><td><strong>43</strong></td><td><strong>43</strong></td></tr>
+                <tr><td>Bestanden</td><td>43</td><td>15</td><td>43</td><td>43</td></tr>
+                <tr><td>Pass Rate</td><td>100%</td><td>100%</td><td>100%</td><td>100%</td></tr>
+                <tr><td>Test-Framework</td><td>xUnit</td><td>xUnit</td><td>xUnit</td><td>xUnit</td></tr>
+                <tr><td>Test-Dateien</td><td>5</td><td>1</td><td>6</td><td>6</td></tr>
+                <tr><td>Test-LOC</td><td>633</td><td>165</td><td>634</td><td>634</td></tr>
+            </tbody>
+        </table>
+        <div class="info-box">
+            <strong>P2</strong> hat nur 15 eigenständig generierte Tests (35% von P1). P3 und P4 erhielten die Tests aus P1 als Vorgabe — deshalb identische Testanzahl und Test-LOC.
+        </div>
+    </section>
+
+    <!-- RUNTIME -->
+    <section id="runtime">
+        <h2>4. Laufzeit</h2>
+        <h3>Cold Run (erste Ausführung, <code>--no-build</code>)</h3>
+        <div class="bar-chart">
+            <div class="bar-row">
+                <span class="bar-label">P1 (Mensch)</span>
+                <div class="bar-track"><div class="bar-fill p1" style="width: 84.7%">1712 ms</div></div>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">P2 (Claude)</span>
+                <div class="bar-track"><div class="bar-fill p2" style="width: 98.1%">1981 ms</div></div>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">P3 (Claude+Tests)</span>
+                <div class="bar-track"><div class="bar-fill p3" style="width: 100%">2020 ms</div></div>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">P4 (Claude+Agent)</span>
+                <div class="bar-track"><div class="bar-fill p4" style="width: 98.3%">1985 ms</div></div>
+            </div>
+        </div>
+        <h3>Warm Run (idempotente zweite Ausführung)</h3>
+        <div class="bar-chart">
+            <div class="bar-row">
+                <span class="bar-label">P1 (Mensch)</span>
+                <div class="bar-track"><div class="bar-fill p1" style="width: 91.4%">1781 ms</div></div>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">P2 (Claude)</span>
+                <div class="bar-track"><div class="bar-fill p2" style="width: 89.1%">1736 ms</div></div>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">P3 (Claude+Tests)</span>
+                <div class="bar-track"><div class="bar-fill p3" style="width: 100%">1948 ms</div></div>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">P4 (Claude+Agent)</span>
+                <div class="bar-track"><div class="bar-fill p4" style="width: 99.1%">1931 ms</div></div>
+            </div>
+        </div>
+        <div class="info-box">
+            Bei dieser Datengröße (5 Customers, 4 Tariffs, ~10 Requests) dominiert der .NET-Startup die Laufzeit.
+            P1/P2 laufen auf <strong>net10.0</strong>, P3/P4 auf <strong>net8.0</strong> — Unterschiede daher nur bedingt vergleichbar.
+        </div>
+    </section>
+
+    <!-- CODE REVIEW -->
+    <section id="review">
+        <h2>5. Subjektive Code-Analyse</h2>
+
+        <h3>5.1 Architektur &amp; Projektstruktur</h3>
+        <table class="rating-table">
+            <thead>
+                <tr>
+                    <th>Aspekt</th>
+                    <th class="col-p1">P1</th>
+                    <th class="col-p2">P2</th>
+                    <th class="col-p3">P3</th>
+                    <th class="col-p4">P4</th>
+                    <th>Bewertung</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Schichtentrennung</td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td class="review-note">P1 trennt in eigene Assemblies (Models, Data, Services). P2–P4 nutzen Ordner in einem Projekt.</td>
+                </tr>
+                <tr>
+                    <td>Single Responsibility</td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td class="review-note">P2 hat eigene SlaCalculator-Klasse — sauberste SRP. P3 dupliziert Path-Discovery-Logik.</td>
+                </tr>
+                <tr>
+                    <td>Abstraktionsebene</td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td class="review-note">P1 nutzt SolutionPathHelper als wiederverwendbare Utility. P2–P4 haben inline-Discovery.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>5.2 Coding Style &amp; Lesbarkeit</h3>
+        <table class="rating-table">
+            <thead>
+                <tr>
+                    <th>Aspekt</th>
+                    <th class="col-p1">P1</th>
+                    <th class="col-p2">P2</th>
+                    <th class="col-p3">P3</th>
+                    <th class="col-p4">P4</th>
+                    <th>Bewertung</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Konsistenz</td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td class="review-note">P3 mischt <code>List&lt;T&gt;</code> und <code>IReadOnlyCollection&lt;T&gt;</code> als Parameter-Typen.</td>
+                </tr>
+                <tr>
+                    <td>Kommentierung</td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td><span class="stars star-1">★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td class="review-note">P1 hat 39 Kommentarzeilen inkl. Scenario-Referenzen und DST-Erklärungen. P3 nur 10.</td>
+                </tr>
+                <tr>
+                    <td>Naming</td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td class="review-note">Alle verwenden klare Bezeichner. P2 positiv: <code>IsPremium</code>, <code>HasSmartMeter</code> als computed Properties.</td>
+                </tr>
+                <tr>
+                    <td>Moderne C# Features</td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td class="review-note">P1: Collection Expressions, <code>required</code>. P2: <code>record</code>, <code>sealed</code>. P3/P4 auf net8.0 — ältere Syntax.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>5.3 Robustheit &amp; Fehlerbehandlung</h3>
+        <table class="rating-table">
+            <thead>
+                <tr>
+                    <th>Aspekt</th>
+                    <th class="col-p1">P1</th>
+                    <th class="col-p2">P2</th>
+                    <th class="col-p3">P3</th>
+                    <th class="col-p4">P4</th>
+                    <th>Bewertung</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Input-Validierung</td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td class="review-note">Alle validieren leere Felder und Timestamps. Unterschiedliche Ansätze (catch vs. TryParse).</td>
+                </tr>
+                <tr>
+                    <td>Idempotenz</td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td class="review-note">Alle überspringen bereits verarbeitete Request-IDs korrekt.</td>
+                </tr>
+                <tr>
+                    <td>Atomic Writes</td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td class="review-note">P1/P3/P4: temp-file + atomic Move. P2: direkt <code>File.WriteAllText</code> — kein Crash-Schutz.</td>
+                </tr>
+                <tr>
+                    <td>DST-Handling</td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td class="review-note">P1: minutengenaue Auflösung. P2: keine Invalid/Ambiguous-Prüfung. P3/P4: vollständig.</td>
+                </tr>
+                <tr>
+                    <td>Paralleles CSV-Lesen</td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-1">★</span></td>
+                    <td><span class="stars star-1">★</span></td>
+                    <td><span class="stars star-1">★</span></td>
+                    <td class="review-note">Nur P1 nutzt <code>Parallel.ForEach</code> + <code>FileShare.ReadWrite</code>.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>5.4 Wartbarkeit &amp; Erweiterbarkeit</h3>
+        <table class="rating-table">
+            <thead>
+                <tr>
+                    <th>Aspekt</th>
+                    <th class="col-p1">P1</th>
+                    <th class="col-p2">P2</th>
+                    <th class="col-p3">P3</th>
+                    <th class="col-p4">P4</th>
+                    <th>Bewertung</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Testbarkeit</td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td class="review-note">P1/P4: overridePath-basierte DI. P2: Konstruktor-Injection. P3: statische Helper schwerer mockbar.</td>
+                </tr>
+                <tr>
+                    <td>Modularität</td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td class="review-note">P1: 4 Assemblies. P2: klare Ordnerstruktur. P3/P4: stärker gekoppelt.</td>
+                </tr>
+                <tr>
+                    <td>Erweiterbarkeit</td>
+                    <td><span class="stars star-3">★★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td><span class="stars star-2">★★</span></td>
+                    <td class="review-note">P1's Assembly-Trennung erlaubt neue Data-Sources. P2's SRP neue Business-Rules.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>5.5 Design-Entscheidungen</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Aspekt</th>
+                    <th class="col-p1">P1 (Mensch)</th>
+                    <th class="col-p2">P2 (Claude)</th>
+                    <th class="col-p3">P3 (Claude+Tests)</th>
+                    <th class="col-p4">P4 (Claude+Agent)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Model-Typ</td><td><code>class</code> + <code>required init</code></td><td><code>record</code> + computed Props</td><td><code>class</code> + Enums</td><td><code>class</code> + Enums</td></tr>
+                <tr><td>Enum-Nutzung</td><td>3 Enums</td><td>Strings (1 Enum)</td><td>3 Enums</td><td>3 Enums (Einzeldateien)</td></tr>
+                <tr><td>SLA-Berechnung</td><td>Inline in Service</td><td>Eigene <code>SlaCalculator</code></td><td>Inline in Service</td><td>Inline in Service</td></tr>
+                <tr><td>CSV-Parsing</td><td><code>ConcurrentDictionary</code></td><td>Statische <code>CsvParser</code></td><td><code>CsvService</code></td><td><code>CsvService</code> (Data ns)</td></tr>
+                <tr><td>Program.cs</td><td>~55 Zeilen</td><td>~120 Zeilen (verbose)</td><td>~130 Zeilen (Schritte)</td><td>~75 Zeilen</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- SCORING -->
+    <section id="scoring">
+        <h2>6. Gesamtbewertung</h2>
+
+        <div class="score-grid">
+            <div class="score-card p1">
+                <div class="score-number">9.3</div>
+                <div class="score-sub">P1 — Mensch</div>
+                <div class="score-label">Gewichteter Gesamtscore</div>
+            </div>
+            <div class="score-card p2">
+                <div class="score-number">7.2</div>
+                <div class="score-sub">P2 — Claude</div>
+                <div class="score-label">Gewichteter Gesamtscore</div>
+            </div>
+            <div class="score-card p3">
+                <div class="score-number">8.4</div>
+                <div class="score-sub">P3 — Claude + Tests</div>
+                <div class="score-label">Gewichteter Gesamtscore</div>
+            </div>
+            <div class="score-card p4">
+                <div class="score-number">8.5</div>
+                <div class="score-sub">P4 — Claude + Agent</div>
+                <div class="score-label">Gewichteter Gesamtscore</div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Kategorie (Gewicht)</th>
+                    <th class="col-p1">P1</th>
+                    <th class="col-p2">P2</th>
+                    <th class="col-p3">P3</th>
+                    <th class="col-p4">P4</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Korrektheit (30%)</td><td><strong>10</strong>/10</td><td>8/10</td><td><strong>10</strong>/10</td><td><strong>10</strong>/10</td></tr>
+                <tr><td>Code-Qualität (20%)</td><td><strong>9</strong>/10</td><td>8/10</td><td>7/10</td><td>8/10</td></tr>
+                <tr><td>Testabdeckung (20%)</td><td><strong>9</strong>/10</td><td>5/10</td><td><strong>9</strong>/10</td><td><strong>9</strong>/10</td></tr>
+                <tr><td>Architektur (15%)</td><td><strong>9</strong>/10</td><td>8/10</td><td>7/10</td><td>7/10</td></tr>
+                <tr><td>Robustheit (15%)</td><td><strong>9</strong>/10</td><td>7/10</td><td>8/10</td><td>8/10</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Stärken &amp; Schwächen</h3>
+        <div class="sw-grid">
+            <div class="sw-card p1">
+                <h4>P1 — Mensch</h4>
+                <ul class="sw-list">
+                    <li class="strength">Beste Architektur (4 Assemblies)</li>
+                    <li class="strength">Vollständigstes DST-Handling</li>
+                    <li class="strength">Paralleles CSV-Lesen</li>
+                    <li class="strength">Hilfreichste Kommentare</li>
+                    <li class="strength">Atomic Writes</li>
+                    <li class="weakness">Höchster Source-LOC (433)</li>
+                </ul>
+            </div>
+            <div class="sw-card p2">
+                <h4>P2 — Claude (nur Instructions)</h4>
+                <ul class="sw-list">
+                    <li class="strength">Kompaktester Code (393 LOC)</li>
+                    <li class="strength">Moderne <code>record</code>-Nutzung</li>
+                    <li class="strength">Eigene SlaCalculator-Klasse</li>
+                    <li class="weakness">Nur 15 Tests (vs. 43)</li>
+                    <li class="weakness">DST nicht vollständig</li>
+                    <li class="weakness">Kein Atomic Write</li>
+                </ul>
+            </div>
+            <div class="sw-card p3">
+                <h4>P3 — Claude + Tests</h4>
+                <ul class="sw-list">
+                    <li class="strength">Besteht alle 43 Tests</li>
+                    <li class="strength">Solides DST-Handling</li>
+                    <li class="strength">TryParse-basierte Validierung</li>
+                    <li class="weakness">Wenigste Kommentare (10)</li>
+                    <li class="weakness">Path-Discovery dupliziert</li>
+                    <li class="weakness">Inkonsistente Parameter-Typen</li>
+                </ul>
+            </div>
+            <div class="sw-card p4">
+                <h4>P4 — Claude + Multi-Agent</h4>
+                <ul class="sw-list">
+                    <li class="strength">Besteht alle 43 Tests</li>
+                    <li class="strength">Saubere IReadOnlyCollection</li>
+                    <li class="strength">Scenario-kommentiert</li>
+                    <li class="weakness">Enums in Einzeldateien</li>
+                    <li class="weakness">Path-Discovery dupliziert</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONCLUSION -->
+    <section id="conclusion">
+        <h2>7. Fazit</h2>
+        <div class="conclusion">
+            <p>
+                Die <strong>manuelle Implementierung (P1)</strong> liefert die beste Gesamtqualität — vor allem bei
+                Architektur, DST-Korrektheit und Robustheit. Die Investition in Multi-Assembly-Trennung zahlt sich
+                bei Wartbarkeit aus.
+            </p>
+            <p>
+                <strong>P2 (Claude ohne Tests)</strong> zeigt, dass KI kompakten, lesbaren Code generieren kann,
+                aber ohne vorgegebene Tests entsteht ein signifikantes Testdefizit (15 vs. 43 Tests) und subtile
+                Korrektheitslücken (DST). Die <code>record</code>-Nutzung ist hingegen ein guter moderner Ansatz.
+            </p>
+            <p>
+                <strong>P3 und P4</strong> sind nahezu identisch in der Qualität. Die vorgegebenen Tests waren der
+                entscheidende Faktor — sie zwingen die KI, die gleiche Korrektheit wie die manuelle Implementierung
+                zu erreichen. Der Multi-Agent-Workflow (P4) liefert marginal besseren Code-Stil als P3.
+            </p>
+            <div class="highlight-box">
+                Kernaussage: Tests sind der wichtigste Qualitätstreiber bei KI-generiertem Code.<br>
+                Ohne Tests sinkt die Qualität merklich. Mit Tests erreicht KI-Code nahezu menschliches Niveau.
+            </div>
+        </div>
+    </section>
+
+</div>
+
+</body>
+</html>

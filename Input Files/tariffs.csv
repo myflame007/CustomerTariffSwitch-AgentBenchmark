@@ -1,0 +1,4 @@
+TariffId;Name;RequiresSmartMeter;BaseMonthlyGross
+T-ECO;ÖkoStrom;TRUE;29.90
+T-BASIC;Basis;FALSE;24.50
+T-PRO;ProFiX;TRUE;39.00
