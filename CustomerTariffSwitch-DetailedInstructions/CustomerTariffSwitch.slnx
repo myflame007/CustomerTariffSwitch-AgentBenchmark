@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="CustomerTariffSwitch.Data/CustomerTariffSwitch.Data.csproj" />
+  <Project Path="CustomerTariffSwitch.Models/CustomerTariffSwitch.Models.csproj" />
+  <Project Path="CustomerTariffSwitch.Tests/CustomerTariffSwitch.Tests.csproj" />
+  <Project Path="CustomerTariffSwitch/CustomerTariffSwitch.csproj" />
+</Solution>
